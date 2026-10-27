@@ -1,11 +1,18 @@
-﻿# 霈蝝??
-## [?芰銵
+﻿# 變更紀錄
 
-### ?啣?
-- 甇豢?撠?撅?`.kilo/` 閮剖????踝?kilo.jsonc?pencode.json?ui.json?gent-manager.json??gitignore?kills/?gents/?lans/嚗?- ???`kilo.jsonc` 蝯?頝臬?嚗??`%USERPROFILE%` ?啣?霈
-- ???隞塚?WORKSPACE_CHARTER.md?HARED_STANDARDS.md?ellfit AGENTS.md嚗ocs/嚗?- ??典??犖閮剖??遢嚗ersonal-reference/config/kilo/?ersonal-reference/kilo/skills/嚗?- ?啣神 README.md嚗?鋆?甇乓楝敺矽?渲牧????CHANGELOG.md
-- ?啣神 .gitignore嚗???node_modules/target/.env/?/??嚗?
+## [未發行]
+
+### 新增
+- 新增 `.gitattributes` 統一行尾格式（LF）
+- 修正目錄雙重巢狀（agents/plans/skills）
+- 歸檔專案層 `.kilo/` 設定與技能（kilo.jsonc、opencode.json、tui.json、agent-manager.json、.gitignore、skills/、agents/、plans/）
+- 參數化 `kilo.jsonc` 絕對路徑，改為 `%USERPROFILE%` 環境變數
+- 加入參考文件：WORKSPACE_CHARTER.md、SHARED_STANDARDS.md、Wellfit AGENTS.md（docs/）
+- 加入全域個人設定備份（personal-reference/config/kilo/、personal-reference/kilo/skills/）
+- 撰寫 README.md（安裝、同步、路徑調整說明）與 CHANGELOG.md
+- 撰寫 .gitignore（排除 node_modules/target/.env/金鑰/個資）
+
 ## [1.0.0] - 2026-10-27
 
-### ???
-- 撱箇? Kilo 閮剖????賣飛瑼摮澈嚗??? clone ??雿?
+### 初始版本
+- 建立 Kilo 設定與技能歸檔儲存庫，供同事 clone 與協作。
