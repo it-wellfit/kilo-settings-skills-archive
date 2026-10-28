@@ -1,10 +1,10 @@
-﻿# ACTIVE_SKILLS.md — 目前啟動的技能
+﻿# ACTIVE_SKILLS.md - 目前啟動的技能
 
 > 由 scripts\skills-activate.ps1 管理。只有標記 [x] 的技能才會在開發流程中被主動套用與檢查。
 
 ## 已啟動技能
 
-_(尚未啟動任何技能。請使用 `skills-activate.ps1 -Skills <id1>,<id2>` 啟動。）_
+_(尚未啟動任何技能。請使用 skills-activate.ps1 -Skills 啟動。）_
 
 ---
 ## 可用技能清單（15 個）

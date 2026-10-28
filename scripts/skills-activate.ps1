@@ -1,15 +1,15 @@
-ï»¿# skills-activate.ps1 â€” æŠ€èƒ½å•Ÿå‹•è…³æœ¬
-# å°‡æŒ‡å®šæŠ€èƒ½è¼‰å…¥ç•¶å‰é–‹ç™¼å·¥ä½œéšæ®µï¼Œå¯«å…¥ ACTIVE_SKILLS.md è¨˜éŒ„ã€‚
+# skills-activate.ps1 - §Ş¯à±Ò°Ê¸}¥»
+# ±N«ü©w§Ş¯à¸ü¤J·í«e¶}µo¤u§@¶¥¬q¡A¼g¤J ACTIVE_SKILLS.md °O¿ı¡C
 #
-# ç”¨æ³•ï¼š
-#   powershell -ExecutionPolicy Bypass -File scripts\skills-activate.ps1 -Skills "06-tdd-and-implementation","08-code-review"
+# ¥Îªk¡G
+#   powershell -ExecutionPolicy Bypass -File scripts\skills-activate.ps1 -Skills '06-tdd-and-implementation','08-code-review'
 #   powershell -ExecutionPolicy Bypass -File scripts\skills-activate.ps1 -List
 #   powershell -ExecutionPolicy Bypass -File scripts\skills-activate.ps1 -Clear
 #
-# åƒæ•¸ï¼š
-#   -Skills   è¦å•Ÿå‹•çš„æŠ€èƒ½ ID é™£åˆ—ï¼ˆä¾‹å¦‚ 06-tdd-and-implementationï¼‰
-#   -List     åˆ—å‡ºç›®å‰å·²å•Ÿå‹•çš„æŠ€èƒ½
-#   -Clear    æ¸…é™¤ç›®å‰çš„å•Ÿå‹•è¨˜éŒ„
+# °Ñ¼Æ¡G
+#   -Skills   ­n±Ò°Êªº§Ş¯à ID °}¦C¡]¨Ò¦p 06-tdd-and-implementation¡^
+#   -List     ¦C¥X¥Ø«e¤w±Ò°Êªº§Ş¯à
+#   -Clear    ²M°£¥Ø«eªº±Ò°Ê°O¿ı
 
 param(
     [string[]]$Skills,
@@ -17,20 +17,24 @@ param(
     [switch]$Clear
 )
 
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = 'Stop'
+# Split comma-separated skills
+if ($Skills -and $Skills.Count -eq 1 -and $Skills[0] -match ',') {
+    $Skills = $Skills[0] -split ',' | ForEach-Object { $_.Trim() }
+}
 $scriptDir = Split-Path -Parent $PSScriptRoot
-$root = (Resolve-Path (Join-Path $scriptDir "..")).Path
-$kiloSkillsDir = Join-Path $root ".kilo\skills"
-$packRoot = Join-Path $kiloSkillsDir "rigorous-skill-pack"
-$activeFile = Join-Path $packRoot "ACTIVE_SKILLS.md"
-$skillsDir = Join-Path $packRoot "skills"
+$root = $scriptDir
+$kiloSkillsDir = Join-Path $root '.kilo\skills'
+$packRoot = Join-Path $kiloSkillsDir 'rigorous-skill-pack'
+$activeFile = Join-Path $packRoot 'ACTIVE_SKILLS.md'
+$skillsDir = Join-Path $packRoot 'skills'
 
 $allSkills = @(
-    "00-orchestration", "01-product-discovery", "02-requirements-specification",
-    "03-ux-and-accessibility", "04-architecture-and-adr", "05-task-planning",
-    "06-tdd-and-implementation", "07-systematic-debugging", "08-code-review",
-    "09-testing-and-quality", "10-security-and-privacy", "11-ai-evaluation-and-governance",
-    "12-ci-cd-and-release", "13-observability-and-reliability", "14-retrospective-and-evolution"
+    '00-orchestration', '01-product-discovery', '02-requirements-specification',
+    '03-ux-and-accessibility', '04-architecture-and-adr', '05-task-planning',
+    '06-tdd-and-implementation', '07-systematic-debugging', '08-code-review',
+    '09-testing-and-quality', '10-security-and-privacy', '11-ai-evaluation-and-governance',
+    '12-ci-cd-and-release', '13-observability-and-reliability', '14-retrospective-and-evolution'
 )
 
 function Test-SkillId {
@@ -40,116 +44,113 @@ function Test-SkillId {
 
 function Test-SkillFile {
     param([string]$Id)
-    $f = Join-Path $skillsDir "$Id\SKILL.md"
+    $f = Join-Path $skillsDir ($Id + '\SKILL.md')
     return Test-Path -LiteralPath $f
 }
 
 function Read-ActiveSkills {
     if (-not (Test-Path -LiteralPath $activeFile)) { return @() }
     $content = Get-Content -LiteralPath $activeFile -Raw
-    $matches = [regex]::Matches($content, "-\s*\[( |x)\]\s*`([^`]+)`")
+    $matches = [regex]::Matches($content, '-\s*\[( |x)\]\s+(.+)$', [System.Text.RegularExpressions.RegexOptions]::Multiline)
     $result = @()
     foreach ($m in $matches) {
-        $result += $m.Groups[2].Value
+        if ($m.Groups[1].Value -eq 'x') {
+            $result += $m.Groups[2].Value.Trim()
+        }
     }
     return $result
 }
 
 function Write-ActiveSkills {
     param([string[]]$Active)
-    $now = Get-Date -Format "yyyy-MM-dd HH:mm"
-    $header = @"
-# ACTIVE_SKILLS.md â€” ç›®å‰å•Ÿå‹•çš„æŠ€èƒ½
-
-> æ›´æ–°æ™‚é–“ï¼š$now
-> æ­¤æª”ç”± skills-activate.ps1 ç®¡ç†ï¼Œè¨˜éŒ„æœ¬é–‹ç™¼å·¥ä½œéšæ®µå·²å•Ÿå‹•çš„æŠ€èƒ½ã€‚
-> åªæœ‰æ¨™è¨˜ [x] çš„æŠ€èƒ½æ‰æœƒåœ¨é–‹ç™¼æµç¨‹ä¸­è¢«ä¸»å‹•å¥—ç”¨èˆ‡æª¢æŸ¥ã€‚
-
-## å·²å•Ÿå‹•æŠ€èƒ½
-
-"@
+    $now = Get-Date -Format 'yyyy-MM-dd HH:mm'
+    $out = @()
+    $out += '# ACTIVE_SKILLS.md - ¥Ø«e±Ò°Êªº§Ş¯à'
+    $out += ''
+    $out += '> §ó·s®É¶¡¡G' + $now
+    $out += '> ¦¹ÀÉ¥Ñ skills-activate.ps1 ºŞ²z¡A°O¿ı¥»¶}µo¤u§@¶¥¬q¤w±Ò°Êªº§Ş¯à¡C'
+    $out += '> ¥u¦³¼Ğ°O [x] ªº§Ş¯à¤~·|¦b¶}µo¬yµ{¤¤³Q¥D°Ê®M¥Î»PÀË¬d¡C'
+    $out += ''
+    $out += '## ¤w±Ò°Ê§Ş¯à'
+    $out += ''
     if ($Active.Count -eq 0) {
-        $body = @"
-_(å°šæœªå•Ÿå‹•ä»»ä½•æŠ€èƒ½ã€‚è«‹ä½¿ç”¨ `skills-activate.ps1 -Skills <id1>,<id2>` å•Ÿå‹•ã€‚ï¼‰_
-
----
-## å¯ç”¨æŠ€èƒ½æ¸…å–®
-
-"@
+        $out += '_(©|¥¼±Ò°Ê¥ô¦ó§Ş¯à¡C½Ğ¨Ï¥Î skills-activate.ps1 -Skills ±Ò°Ê¡C¡^_'
+        $out += ''
+        $out += '---'
+        $out += '## ¥i¥Î§Ş¯à²M³æ'
+        $out += ''
         foreach ($s in $allSkills) {
-            $body += "- [ ] $s`n"
+            $out += ('- [ ] ' + $s)
         }
     } else {
         foreach ($s in $Active) {
-            $body += "- [x] $s`n"
+            $out += ('- [x] ' + $s)
         }
-        $body += @"
----
-## æœªå•Ÿå‹•æŠ€èƒ½
-
-"@
+        $out += ''
+        $out += '---'
+        $out += '## ¥¼±Ò°Ê§Ş¯à'
+        $out += ''
         $inactive = $allSkills | Where-Object { $_ -notin $Active }
         foreach ($s in $inactive) {
-            $body += "- [ ] $s`n"
+            $out += ('- [ ] ' + $s)
         }
     }
-    $footer = @"
----
-## å¦‚ä½•å•Ÿå‹•
-
-```powershell
-# å•Ÿå‹•å–®ä¸€æŠ€èƒ½ï¼ˆä¾‹å¦‚æº–å‚™å¯¦ä½œæ™‚å•Ÿå‹• TDDï¼‰
-powershell -ExecutionPolicy Bypass -File scripts\skills-activate.ps1 -Skills "06-tdd-and-implementation"
-
-# å•Ÿå‹•å¤šå€‹æŠ€èƒ½ï¼ˆä¾‹å¦‚å¯¦ä½œï¼‹å¯©æŸ¥ï¼‹å“è³ªé©—è­‰ï¼‰
-powershell -ExecutionPolicy Bypass -File scripts\skills-activate.ps1 -Skills "06-tdd-and-implementation","08-code-review","09-testing-and-quality"
-
-# æŸ¥çœ‹ç›®å‰å·²å•Ÿå‹•çš„æŠ€èƒ½
-powershell -ExecutionPolicy Bypass -File scripts\skills-activate.ps1 -List
-
-# æ¸…é™¤æ‰€æœ‰è¨˜éŒ„ï¼ˆæ›ä»»å‹™æ™‚ä½¿ç”¨ï¼‰
-powershell -ExecutionPolicy Bypass -File scripts\skills-activate.ps1 -Clear
-```
-
----
-## æŠ€èƒ½èˆ‡é–‹ç™¼éšæ®µå°æ‡‰
-
-| é–‹ç™¼éšæ®µ | å»ºè­°å•Ÿå‹•æŠ€èƒ½ | å°æ‡‰ MASTER-WORKFLOW |
-|----------|-------------|---------------------|
-| éœ€æ±‚åˆ†æ | 01-product-discovery, 02-requirements-specification | G1-G2 |
-| æ¶æ§‹è¨­è¨ˆ | 04-architecture-and-adr, 05-task-planning | G4-G5 |
-| ç¨‹å¼å¯¦ä½œ | 06-tdd-and-implementation, 09-testing-and-quality | G6 |
-| é™¤éŒ¯ä¿® Bug | 07-systematic-debugging | G7 |
-| ä»£ç¢¼å¯©æŸ¥ | 08-code-review | G8 |
-| å“è³ªé©—è­‰ | 09-testing-and-quality, 10-security-and-privacy | G9 |
-| ç™¼å¸ƒéƒ¨ç½² | 12-ci-cd-and-release, 13-observability-and-reliability | G10 |
-| ç™¼å¸ƒå›é¡§ | 14-retrospective-and-evolution | G10 ä¹‹å¾Œ |
-
-"@
-    ($header + $body + $footer) | Set-Content -LiteralPath $activeFile -Encoding UTF8
+    $out += ''
+    $out += '---'
+    $out += '## ¦p¦ó±Ò°Ê'
+    $out += ''
+    $out += '```powershell'
+    $out += '# ±Ò°Ê³æ¤@§Ş¯à¡]¨Ò¦p·Ç³Æ¹ê§@®É±Ò°Ê TDD¡^'
+    $out += 'powershell -ExecutionPolicy Bypass -File scripts\skills-activate.ps1 -Skills 06-tdd-and-implementation'
+    $out += ''
+    $out += '# ±Ò°Ê¦h­Ó§Ş¯à¡]¨Ò¦p¹ê§@+¼f¬d+«~½èÅçÃÒ¡^'
+    $out += 'powershell -ExecutionPolicy Bypass -File scripts\skills-activate.ps1 -Skills 06-tdd-and-implementation,08-code-review,09-testing-and-quality'
+    $out += ''
+    $out += '# ¬d¬İ¥Ø«e¤w±Ò°Êªº§Ş¯à'
+    $out += 'powershell -ExecutionPolicy Bypass -File scripts\skills-activate.ps1 -List'
+    $out += ''
+    $out += '# ²M°£©Ò¦³°O¿ı¡]´«¥ô°È®É¨Ï¥Î¡^'
+    $out += 'powershell -ExecutionPolicy Bypass -File scripts\skills-activate.ps1 -Clear'
+    $out += '```'
+    $out += ''
+    $out += '---'
+    $out += '## §Ş¯à»P¶}µo¶¥¬q¹ïÀ³'
+    $out += ''
+    $out += '| ¶}µo¶¥¬q | «ØÄ³±Ò°Ê§Ş¯à | ¹ïÀ³ MASTER-WORKFLOW |'
+    $out += '|----------|-------------|---------------------|'
+    $out += '| »İ¨D¤ÀªR | 01-product-discovery, 02-requirements-specification | G1-G2 |'
+    $out += '| ¬[ºc³]­p | 04-architecture-and-adr, 05-task-planning | G4-G5 |'
+    $out += '| µ{¦¡¹ê§@ | 06-tdd-and-implementation, 09-testing-and-quality | G6 |'
+    $out += '| °£¿ù­× Bug | 07-systematic-debugging | G7 |'
+    $out += '| ¥N½X¼f¬d | 08-code-review | G8 |'
+    $out += '| «~½èÅçÃÒ | 09-testing-and-quality, 10-security-and-privacy | G9 |'
+    $out += '| µo¥¬³¡¸p | 12-ci-cd-and-release, 13-observability-and-reliability | G10 |'
+    $out += '| µo¥¬¦^ÅU | 14-retrospective-and-evolution | G10 ¤§«á |'
+    $out += ''
+    ($out -join [char]10) | Set-Content -LiteralPath $activeFile -Encoding UTF8
 }
 
 # --- Main ---
 
 if ($Clear) {
     if (Test-Path -LiteralPath $activeFile) { Remove-Item -LiteralPath $activeFile -Force }
-    Write-Host "å·²æ¸…é™¤æ‰€æœ‰å•Ÿå‹•è¨˜éŒ„ã€‚" -ForegroundColor Green
+    Write-Host '¤w²M°£©Ò¦³±Ò°Ê°O¿ı¡C' -ForegroundColor Green
     exit 0
 }
 
 if ($List) {
     $active = Read-ActiveSkills
     if ($active.Count -eq 0) {
-        Write-Host "ç›®å‰æœªå•Ÿå‹•ä»»ä½•æŠ€èƒ½ã€‚" -ForegroundColor Yellow
+        Write-Host '¥Ø«e¥¼±Ò°Ê¥ô¦ó§Ş¯à¡C' -ForegroundColor Yellow
     } else {
-        Write-Host "ç›®å‰å·²å•Ÿå‹•çš„æŠ€èƒ½ï¼š" -ForegroundColor Cyan
-        foreach ($s in $active) { Write-Host "  [x] $s" -ForegroundColor Green }
+        Write-Host '¥Ø«e¤w±Ò°Êªº§Ş¯à¡G' -ForegroundColor Cyan
+        foreach ($s in $active) { Write-Host ('  [x] ' + $s) -ForegroundColor Green }
     }
-    Write-Host ""
-    Write-Host "å¯ç”¨æŠ€èƒ½ï¼ˆå…± $($allSkills.Count) å€‹ï¼‰ï¼š" -ForegroundColor Cyan
+    Write-Host ''
+    Write-Host ("¥i¥Î§Ş¯à¡]¦@ " + $allSkills.Count + " ­Ó¡^¡G") -ForegroundColor Cyan
     foreach ($s in $allSkills) {
-        $marker = if ($active -contains $s) { "[x]" } else { "[ ]" }
-        Write-Host "  $marker $s"
+        $marker = if ($active -contains $s) { '[x]' } else { '[ ]' }
+        Write-Host ('  ' + $marker + ' ' + $s)
     }
     exit 0
 }
@@ -157,34 +158,34 @@ if ($List) {
 if ($Skills -and $Skills.Count -gt 0) {
     $invalid = $Skills | Where-Object { -not (Test-SkillId $_) }
     if ($invalid.Count -gt 0) {
-        Write-Host "éŒ¯èª¤ï¼šä¸‹åˆ—æŠ€èƒ½ ID ç„¡æ•ˆï¼š$($invalid -join ', ')" -ForegroundColor Red
+        Write-Host ('¿ù»~¡G¤U¦C§Ş¯à ID µL®Ä¡G' + ($invalid -join ', ')) -ForegroundColor Red
         exit 1
     }
 
     $missing = $Skills | Where-Object { -not (Test-SkillFile $_) }
     if ($missing.Count -gt 0) {
-        Write-Host "éŒ¯èª¤ï¼šä¸‹åˆ—æŠ€èƒ½æª”æ¡ˆä¸å­˜åœ¨ï¼š$($missing -join ', ')" -ForegroundColor Red
+        Write-Host ('¿ù»~¡G¤U¦C§Ş¯àÀÉ®×¤£¦s¦b¡G' + ($missing -join ', ')) -ForegroundColor Red
         exit 1
     }
 
     $existing = Read-ActiveSkills
     $merged = ($existing + $Skills) | Sort-Object -Unique
     Write-ActiveSkills -Active $merged
-    Write-Host "å·²å•Ÿå‹•æŠ€èƒ½ï¼š$($Skills -join ', ')" -ForegroundColor Green
-    Write-Host "ç¸½è¨ˆå·²å•Ÿå‹•ï¼š$($merged.Count) å€‹" -ForegroundColor Green
+    Write-Host ('¤w±Ò°Ê§Ş¯à¡G' + ($Skills -join ', ')) -ForegroundColor Green
+    Write-Host ('Á`­p¤w±Ò°Ê¡G' + $merged.Count + ' ­Ó') -ForegroundColor Green
     exit 0
 }
 
-# ç„¡åƒæ•¸ï¼šé¡¯ç¤ºèªªæ˜
-Write-Host "æŠ€èƒ½å•Ÿå‹•è…³æœ¬ (skills-activate.ps1)" -ForegroundColor Cyan
-Write-Host ""
-Write-Host "ç”¨æ³•ç¯„ä¾‹ï¼š"
-Write-Host "  å•Ÿå‹•å–®ä¸€æŠ€èƒ½ï¼š  .\skills-activate.ps1 -Skills ""06-tdd-and-implementation"""
-Write-Host "  å•Ÿå‹•å¤šå€‹æŠ€èƒ½ï¼š .\skills-activate.ps1 -Skills ""06-tdd-and-implementation"",""08-code-review"""
-Write-Host "  åˆ—å‡ºç›®å‰ç‹€æ…‹ï¼š .\skills-activate.ps1 -List"
-Write-Host "  æ¸…é™¤è¨˜éŒ„ï¼š     .\skills-activate.ps1 -Clear"
-Write-Host ""
-Write-Host "ç›®å‰å·²å•Ÿå‹•ï¼š"
+# µL°Ñ¼Æ¡GÅã¥Ü»¡©ú
+Write-Host '§Ş¯à±Ò°Ê¸}¥» (skills-activate.ps1)' -ForegroundColor Cyan
+Write-Host ''
+Write-Host '¥Îªk½d¨Ò¡G'
+Write-Host '  ±Ò°Ê³æ¤@§Ş¯à¡G  .\skills-activate.ps1 -Skills ''06-tdd-and-implementation'''
+Write-Host '  ±Ò°Ê¦h­Ó§Ş¯à¡G .\skills-activate.ps1 -Skills ''06-tdd-and-implementation'',''08-code-review'''
+Write-Host '  ¦C¥X¥Ø«eª¬ºA¡G .\skills-activate.ps1 -List'
+Write-Host '  ²M°£°O¿ı¡G     .\skills-activate.ps1 -Clear'
+Write-Host ''
+Write-Host '¥Ø«e¤w±Ò°Ê¡G'
 $active = Read-ActiveSkills
-if ($active.Count -eq 0) { Write-Host "  (ç„¡)" -ForegroundColor Yellow }
-else { foreach ($s in $active) { Write-Host "  [x] $s" -ForegroundColor Green } }
+if ($active.Count -eq 0) { Write-Host '  (µL)' -ForegroundColor Yellow }
+else { foreach ($s in $active) { Write-Host ('  [x] ' + $s) -ForegroundColor Green } }
