@@ -146,15 +146,48 @@ git bundle verify backup-*.bundle
 - CR-only 行尾: 使用 `split_lines`（支援 LF/CRLF/CR）
 - 隔離列行號: 使用 row_lines 同步機制
 
-## 技能參考：AI 時代嚴謹軟體工程技能包 v1.0.0
+## 主動技能使用：AI 時代嚴謹軟體工程技能包 v1.0.0
 
-安裝位置：`.kilo/skills/rigorous-skill-pack/`（工作區層級，不覆蓋本檔）。
+安裝位置：`.kilo/skills/rigorous-skill-pack/`
 
-本技能包提供 15 個獨立技能與 12 個評估案例，總控層為 `00-orchestration`。按需載入對應技能，不直接覆寫本 `AGENTS.md` 或任何專案規則。所有完成判定均須有實際證據，不僅接受 AI 自稱。
+### 每次開發前必做
 
-參考檔案：
-- `MASTER-WORKFLOW.md`：G0–G10 端到端工程總控流程
-- `skills/00-orchestration/SKILL.md`：總控層與停止條件
-- `evals/workflow-evals/cases.json`：12 個評估案例
-- `scripts/validate_pack.py`：套件結構驗證
+1. **啟動對應技能**
+   ```powershell
+   # 準備實作時：啟動 TDD + 測試
+   powershell -ExecutionPolicy Bypass -File scripts\skills-activate.ps1 -Skills "06-tdd-and-implementation","09-testing-and-quality"
+
+   # 準備審查時：啟動代碼審查
+   powershell -ExecutionPolicy Bypass -File scripts\skills-activate.ps1 -Skills "08-code-review"
+
+   # 準備架構變更時：啟動架構 + 任務規劃
+   powershell -ExecutionPolicy Bypass -File scripts\skills-activate.ps1 -Skills "04-architecture-and-adr","05-task-planning"
+   ```
+
+2. **查看目前狀態**
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File scripts\skills-activate.ps1 -List
+   ```
+
+3. **換任務時清除並重新啟動**
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File scripts\skills-activate.ps1 -Clear
+   ```
+
+### 技能與開發階段對應
+
+| 開發階段 | 建議啟動技能 | 對應 MASTER-WORKFLOW |
+|----------|-------------|---------------------|
+| 需求分析 | 01-product-discovery, 02-requirements-specification | G1-G2 |
+| 架構設計 | 04-architecture-and-adr, 05-task-planning | G4-G5 |
+| 程式實作 | 06-tdd-and-implementation, 09-testing-and-quality | G6 |
+| 除錯修 Bug | 07-systematic-debugging | G7 |
+| 代碼審查 | 08-code-review | G8 |
+| 品質驗證 | 09-testing-and-quality, 10-security-and-privacy | G9 |
+| 發布部署 | 12-ci-cd-and-release, 13-observability-and-reliability | G10 |
+| 發布回顧 | 14-retrospective-and-evolution | G10 之後 |
+
+### 完成判定
+
+每個技能的完成必須有「實際證據」：檔案存在、命令退出碼為 0、測試通過、驗證腳本 PASS。不僅接受 AI 自稱「已完成」。
 - `docs/source-registry.md`：來源與授權注意事項
